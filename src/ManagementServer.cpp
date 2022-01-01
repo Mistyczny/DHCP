@@ -1,26 +1,31 @@
 #include "ManagementServer.hpp"
 #include <iostream>
+#include <utility>
 
 namespace Management {
 
 class Listener : public std::enable_shared_from_this<Listener> {
 private:
     boost::asio::io_context& ioContext;
-    boost::asio::ip::tcp::acceptor acceptor;
+    std::shared_ptr<Dhcp::Statistics> dhcpStatistics;
     std::shared_ptr<std::string const> doc_root_;
+    boost::asio::ip::tcp::acceptor acceptor;
 
     void OnAccept(boost::beast::error_code errorCode, boost::asio::ip::tcp::socket socket) {
         if (errorCode) {
+            std::cout << "Error: " << errorCode.message() << std::endl;
             return;
         } else {
-            std::make_shared<Session>(std::move(socket), doc_root_)->Run();
+            std::cout << "Accepted connection - creating session" << std::endl;
+            std::make_shared<Session>(std::move(socket), doc_root_, dhcpStatistics)->Run();
         }
 
         this->StartAcceptingConnections();
     }
 
 public:
-    explicit Listener(boost::asio::io_context& ioContext) : ioContext{ioContext}, acceptor(boost::asio::make_strand(ioContext)) {
+    explicit Listener(boost::asio::io_context& ioContext, std::shared_ptr<Dhcp::Statistics> dhcpStatistics)
+        : ioContext{ioContext}, dhcpStatistics{std::move(dhcpStatistics)}, acceptor(boost::asio::make_strand(ioContext)) {
         boost::beast::error_code errorCode{};
         if (this->acceptor.open(boost::asio::ip::tcp::v4(), errorCode); errorCode) {
             throw std::runtime_error("Failed to open management port");
@@ -43,7 +48,10 @@ public:
     }
 };
 
-Server::Server(boost::asio::io_context& ioContext) : ioContext{ioContext} { listener = std::make_shared<Listener>(this->ioContext); }
+Server::Server(boost::asio::io_context& ioContext, std::shared_ptr<Dhcp::Statistics> dhcpStatistics)
+    : ioContext{ioContext}, dhcpStatistics{std::move(dhcpStatistics)} {
+    listener = std::make_shared<Listener>(this->ioContext, this->dhcpStatistics);
+}
 
 void Server::Run() {
     if (this->listener) {

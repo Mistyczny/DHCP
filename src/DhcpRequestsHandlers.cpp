@@ -1,10 +1,12 @@
 #include "DhcpRequestsHandlers.hpp"
+
+#include <utility>
 #include "Message.hpp"
 
 namespace Dhcp {
 
-RequestHandler::RequestHandler(boost::asio::ip::udp::socket& socket, Statistics& dhcpStatistics)
-    : socket{socket}, dhcpStatistics{dhcpStatistics} {}
+RequestHandler::RequestHandler(boost::asio::ip::udp::socket& socket, std::shared_ptr<Dhcp::Statistics> dhcpStatistics)
+    : socket{socket}, dhcpStatistics{std::move(dhcpStatistics)} {}
 
 void RequestHandler::sendResponse(PDU&& pdu) {
     std::cout << "Sending response" << std::endl;
@@ -15,8 +17,8 @@ void RequestHandler::sendResponse(PDU&& pdu) {
     std::cout << "Sending response done" << std::endl;
 }
 
-DiscoverRequestHandler::DiscoverRequestHandler(boost::asio::ip::udp::socket& socket, Statistics& dhcpStatistics)
-    : RequestHandler{socket, dhcpStatistics} {}
+DiscoverRequestHandler::DiscoverRequestHandler(boost::asio::ip::udp::socket& socket, std::shared_ptr<Dhcp::Statistics> dhcpStatistics)
+    : RequestHandler{socket, std::move(dhcpStatistics)} {}
 
 bool DiscoverRequestHandler::Process(const Packet& packet) {
     if (packet.GetMessageType() != MessageType::Discover) {
@@ -45,7 +47,8 @@ bool DiscoverRequestHandler::Process(const Packet& packet) {
     return true;
 }
 
-AddressRequestHandler::AddressRequestHandler(udp::socket& socket, Statistics& dhcpStatistics) : RequestHandler(socket, dhcpStatistics) {}
+AddressRequestHandler::AddressRequestHandler(udp::socket& socket, std::shared_ptr<Dhcp::Statistics> dhcpStatistics)
+    : RequestHandler(socket, std::move(dhcpStatistics)) {}
 
 bool AddressRequestHandler::Process(const Packet& packet) {
     if (packet.GetMessageType() != MessageType::Request) {
@@ -74,7 +77,8 @@ bool AddressRequestHandler::Process(const Packet& packet) {
     return true;
 }
 
-ReleaseRequestHandler::ReleaseRequestHandler(udp::socket& socket, Statistics& dhcpStatistics) : RequestHandler(socket, dhcpStatistics) {}
+ReleaseRequestHandler::ReleaseRequestHandler(udp::socket& socket, std::shared_ptr<Dhcp::Statistics> dhcpStatistics)
+    : RequestHandler(socket, std::move(dhcpStatistics)) {}
 
 bool ReleaseRequestHandler::Process(const Packet& packet) {
     if (packet.GetMessageType() != MessageType::Release) {

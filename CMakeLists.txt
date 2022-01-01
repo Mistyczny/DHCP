@@ -15,13 +15,16 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 option(BUILD_TESTS "Build tests" ON)
-message("Tutaj: ${BOOST_ROOT}")
-message("Tutaj: ${Boost_INCLUDE_DIRS}")
+
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREAD ON)
+
 find_package(Boost COMPONENTS json REQUIRED)
+
 aux_source_directory(${CMAKE_SOURCE_DIR}/src SOURCES)
-message("-- Tu: ${Boost_LIBRARIES}")
+
+add_subdirectory(Source)
+
 add_executable(DHCP ${SOURCES})
 target_include_directories(DHCP
         PRIVATE
@@ -32,6 +35,9 @@ target_link_libraries(DHCP
         PRIVATE
     Boost::json
     Threads::Threads
+    DhcpPacket
+    Statistics
+    HttpControllers
 )
 
 if(BUILD_TESTS)

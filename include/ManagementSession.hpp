@@ -1,8 +1,10 @@
 #pragma once
+#include "DhcpStatistics.hpp"
+#include "StatisticsController.hpp"
+#include "ConfigurationController.hpp"
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <memory>
-#include "StatisticsController.hpp"
 
 namespace Management {
 
@@ -29,24 +31,24 @@ private:
     };
 
     boost::beast::tcp_stream stream;
+    std::shared_ptr<Dhcp::Statistics> dhcpStatistics;
     boost::beast::flat_buffer buffer;
     std::shared_ptr<std::string const> doc_root;
     boost::beast::http::request<boost::beast::http::string_body> request;
     std::shared_ptr<void> response;
+    std::map<std::string, std::unique_ptr<HttpControllerInterface<SendLambda>>> controllers;
     SendLambda sendLambda;
-
-
 
     void DoRead();
     void OnReadCompleted(boost::beast::error_code, std::size_t);
     void OnWriteCompleted(bool close, boost::beast::error_code ec, std::size_t bytes_transferred);
 
 public:
-    Session(boost::asio::ip::tcp::socket&& socket, std::shared_ptr<std::string const> const& doc_root);
+    Session(boost::asio::ip::tcp::socket&& socket, std::shared_ptr<std::string const> const& doc_root,
+            std::shared_ptr<Dhcp::Statistics> dhcpStatistics);
 
     void Run();
     void Close();
 };
 
-}
-
+} // namespace Management

@@ -1,6 +1,6 @@
 #pragma once
-#include "DhcpPacket.hpp"
-#include "DhcpStatistics.hpp"
+#include "../Source/DhcpPacket/DhcpPacket.hpp"
+#include "../Source/Statistics/DhcpStatistics.hpp"
 #include "DhcpAddressesCache.hpp"
 #include "DhcpRequestsHandlers.hpp"
 #include "Message.hpp"
@@ -13,7 +13,7 @@ constexpr size_t DefaultMaxMessageSize = 1024;
 
 class Server {
 private:
-    Statistics& dhcpStatistics;
+    std::shared_ptr<Dhcp::Statistics> dhcpStatistics;
     AddressesCache& dhcpAddressesCache;
     boost::asio::ip::udp::socket socket;
     boost::asio::ip::udp::endpoint remoteEndpoint;
@@ -26,7 +26,7 @@ private:
     void ProcessResponse(Packet&);
 
 public:
-    Server(boost::asio::io_context& ioContext, Dhcp::Statistics&, AddressesCache&);
+    Server(boost::asio::io_context& ioContext, std::shared_ptr<Dhcp::Statistics>, AddressesCache&);
     ~Server();
     Server(const Server&) = delete;
     Server& operator=(const Server& other) = delete;

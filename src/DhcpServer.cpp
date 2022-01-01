@@ -5,16 +5,16 @@
 
 namespace Dhcp {
 
-Server::Server(boost::asio::io_context& ioContext, Dhcp::Statistics& dhcpStatistics, AddressesCache& dhcpAddressesCache)
-    : dhcpStatistics{dhcpStatistics}, dhcpAddressesCache{dhcpAddressesCache},
+Server::Server(boost::asio::io_context& ioContext, std::shared_ptr<Dhcp::Statistics> dhcpStatistics, AddressesCache& dhcpAddressesCache)
+    : dhcpStatistics{std::move(dhcpStatistics)}, dhcpAddressesCache{dhcpAddressesCache},
       socket{ioContext, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), DefaultServerPort)}, writeSocket{ioContext} {
     boost::asio::socket_base::broadcast option(true);
     this->socket.set_option(option);
     this->socket.set_option(boost::asio::ip::udp::socket::reuse_address(true));
     this->message.body.resize(DefaultMaxMessageSize);
     boost::system::error_code writeSocketError{};
-    if(this->writeSocket.open(boost::asio::ip::udp::v4(), writeSocketError)) {
-        std::cout<< "OPEN" << std::endl;
+    if (this->writeSocket.open(boost::asio::ip::udp::v4(), writeSocketError)) {
+        std::cout << "OPEN" << std::endl;
     }
     this->writeSocket.set_option(boost::asio::ip::udp::socket::reuse_address(true));
     this->writeSocket.set_option(boost::asio::socket_base::broadcast(true));
@@ -54,8 +54,8 @@ void Server::HandleReceive(const boost::system::error_code& error, std::size_t b
                 this->ProcessResponse(dhcpPacket);
                 break;
             default:
-                this->dhcpStatistics.incrementDroppedMessages("Invalid action type: " +
-                                                              std::to_string(static_cast<int>(dhcpPacket.GetPDU().operationCode)));
+                const auto invalidOperationCode = static_cast<const uint32_t>(dhcpPacket.GetPDU().operationCode);
+                this->dhcpStatistics->IncrementDroppedMessages(std::make_unique<InvalidDhcpMessageRequestType>(invalidOperationCode));
                 break;
             }
         } catch (std::exception& ex) {
@@ -67,17 +67,19 @@ void Server::HandleReceive(const boost::system::error_code& error, std::size_t b
 }
 
 void Server::ProcessRequest(Packet& request) {
+    // Loop until we find valid request handler
     for (auto& requestHandler : requestsHandlers) {
         if (requestHandler->Process(request)) {
             return;
         }
     }
 
-    this->dhcpStatistics.incrementDroppedMessages("Invalid message type: " + std::to_string(request.GetMessageType()));
+    auto operationCode = static_cast<uint64_t>(request.GetPDU().operationCode);
+    this->dhcpStatistics->IncrementDroppedMessages(std::make_unique<InvalidDhcpMessageOperationCode>(operationCode));
 }
 
 void Server::ProcessResponse(Packet& response) {
-    this->dhcpStatistics.incrementDroppedMessages("Received message with response operation code");
+    this->dhcpStatistics->IncrementDroppedMessages("Received message with response operation code");
 }
 
 } // namespace Dhcp

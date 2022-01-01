@@ -1,6 +1,6 @@
 #pragma once
-#include "DhcpStatistics.hpp"
-#include "DhcpPacket.hpp"
+#include "../Source/DhcpPacket/DhcpPacket.hpp"
+#include "../Source/Statistics/DhcpStatistics.hpp"
 #include <boost/asio.hpp>
 
 namespace Dhcp {
@@ -8,11 +8,12 @@ namespace Dhcp {
 class RequestHandler {
 protected:
     boost::asio::ip::udp::socket& socket;
-    Statistics& dhcpStatistics;
+    std::shared_ptr<Dhcp::Statistics> dhcpStatistics;
 
     void sendResponse(PDU&&);
+
 public:
-    RequestHandler(boost::asio::ip::udp::socket& socket, Statistics& dhcpStatistics);
+    RequestHandler(boost::asio::ip::udp::socket& socket, std::shared_ptr<Dhcp::Statistics> dhcpStatistics);
     ~RequestHandler() = default;
 
     virtual bool Process(const Packet& packet) = 0;
@@ -21,7 +22,7 @@ public:
 class DiscoverRequestHandler : public RequestHandler {
 private:
 public:
-    DiscoverRequestHandler(boost::asio::ip::udp::socket& socket, Statistics& dhcpStatistics);
+    DiscoverRequestHandler(boost::asio::ip::udp::socket& socket, std::shared_ptr<Dhcp::Statistics> dhcpStatistics);
 
     bool Process(const Packet& packet) override;
 };
@@ -29,7 +30,7 @@ public:
 class AddressRequestHandler : public RequestHandler {
 private:
 public:
-    AddressRequestHandler(boost::asio::ip::udp::socket& socket, Statistics& dhcpStatistics);
+    AddressRequestHandler(boost::asio::ip::udp::socket& socket, std::shared_ptr<Dhcp::Statistics> dhcpStatistics);
 
     bool Process(const Packet& packet) override;
 };
@@ -37,9 +38,9 @@ public:
 class ReleaseRequestHandler : public RequestHandler {
 private:
 public:
-    ReleaseRequestHandler(boost::asio::ip::udp::socket& socket, Statistics& dhcpStatistics);
+    ReleaseRequestHandler(boost::asio::ip::udp::socket& socket, std::shared_ptr<Dhcp::Statistics> dhcpStatistics);
 
     bool Process(const Packet& packet) override;
 };
 
-}
+} // namespace Dhcp

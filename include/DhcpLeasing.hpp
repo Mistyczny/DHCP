@@ -1,5 +1,5 @@
 #pragma once
-#include "DhcpPacket.hpp"
+#include "../Source/DhcpPacket/DhcpPacket.hpp"
 
 namespace Dhcp {
 
