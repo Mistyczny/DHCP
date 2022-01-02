@@ -1,7 +1,8 @@
 #pragma once
+#include "Configuration.hpp"
+#include "ConfigurationController.hpp"
 #include "DhcpStatistics.hpp"
 #include "StatisticsController.hpp"
-#include "ConfigurationController.hpp"
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <memory>
@@ -31,7 +32,8 @@ private:
     };
 
     boost::beast::tcp_stream stream;
-    std::shared_ptr<Dhcp::Statistics> dhcpStatistics;
+    std::shared_ptr<Dhcp::Statistics> statistics;
+    std::shared_ptr<Configuration::Config> configuration;
     boost::beast::flat_buffer buffer;
     std::shared_ptr<std::string const> doc_root;
     boost::beast::http::request<boost::beast::http::string_body> request;
@@ -45,7 +47,7 @@ private:
 
 public:
     Session(boost::asio::ip::tcp::socket&& socket, std::shared_ptr<std::string const> const& doc_root,
-            std::shared_ptr<Dhcp::Statistics> dhcpStatistics);
+            std::shared_ptr<Configuration::Config> config, std::shared_ptr<Dhcp::Statistics> statistics);
 
     void Run();
     void Close();

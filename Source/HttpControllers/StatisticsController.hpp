@@ -25,18 +25,18 @@ template <class Send> class Controller : public HttpControllerInterface<Send> {
 private:
     std::shared_ptr<Dhcp::Statistics> dhcpStatistics;
 
-        typedef std::pair<beast::http::verb, std::string> HttpMethod;
-        typedef std::function<beast::http::response<beast::http::string_body>(beast::http::request<beast::http::string_body>&,
-                                                                              std::shared_ptr<Dhcp::Statistics> dhcpStatistics)>
-            HttpRequestHandler;
+    typedef std::pair<beast::http::verb, std::string> HttpMethod;
+    typedef std::function<beast::http::response<beast::http::string_body>(beast::http::request<beast::http::string_body>&,
+                                                                          std::shared_ptr<Dhcp::Statistics> dhcpStatistics)>
+        HttpRequestHandler;
 
-        std::map<HttpMethod, HttpRequestHandler> controllers;
+    std::map<HttpMethod, HttpRequestHandler> controllers;
 
 public:
     Controller(Send send, std::shared_ptr<Dhcp::Statistics> dhcpStatistics)
         : HttpControllerInterface<Send>{send}, dhcpStatistics{std::move(dhcpStatistics)} {
-         controllers.emplace(std::make_pair(beast::http::verb::post, "\\/statistics\\/reset"), ResetRequest());
-         controllers.emplace(std::make_pair(beast::http::verb::get, "\\/statistics\\/dropped"), GetDroppedMessagesRequest());
+        controllers.emplace(std::make_pair(beast::http::verb::post, "\\/statistics\\/reset"), ResetRequest());
+        controllers.emplace(std::make_pair(beast::http::verb::get, "\\/statistics\\/dropped"), GetDroppedMessagesRequest());
     }
     virtual ~Controller() = default;
 

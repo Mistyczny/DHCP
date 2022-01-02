@@ -9,5 +9,6 @@ target_include_directories(HttpControllers
 target_link_libraries(HttpControllers
         PUBLIC
     DhcpPacket
+    Configuration
     Statistics
 )

@@ -35,6 +35,7 @@ target_link_libraries(DHCP
         PRIVATE
     Boost::json
     Threads::Threads
+    Configuration
     DhcpPacket
     Statistics
     HttpControllers

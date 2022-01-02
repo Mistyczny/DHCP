@@ -7,11 +7,11 @@
 namespace Management {
 
 Session::Session(boost::asio::ip::tcp::socket&& socket, std::shared_ptr<std::string const> const& doc_root,
-                 std::shared_ptr<Dhcp::Statistics> dhcpStatistics)
-    : stream{std::move(socket)}, dhcpStatistics{std::move(dhcpStatistics)}, sendLambda{*this} {
+                 std::shared_ptr<Configuration::Config> config, std::shared_ptr<Dhcp::Statistics> statistics)
+    : stream{std::move(socket)}, configuration{std::move(config)}, statistics{std::move(statistics)}, sendLambda{*this} {
 
-    controllers.emplace("/configuration", std::make_unique<Configuration::Controller<SendLambda>>(this->sendLambda));
-    controllers.emplace("/statistics", std::make_unique<Statistics::Controller<SendLambda>>(this->sendLambda, this->dhcpStatistics));
+    controllers.emplace("/configuration", std::make_unique<Configuration::Controller<SendLambda>>(this->sendLambda, this->configuration));
+    controllers.emplace("/statistics", std::make_unique<Statistics::Controller<SendLambda>>(this->sendLambda, this->statistics));
 }
 
 void Session::Run() {
@@ -40,14 +40,12 @@ void Session::OnReadCompleted(boost::beast::error_code errorCode, std::size_t by
         // We do not to care, if string has any length. In case it's empty find will return string::npos
         auto firstPos = this->request.target().find('/');
         auto secondPos = this->request.target().find('/', firstPos + 1);
-        std::cout << firstPos << std::endl;
-        std::cout << secondPos << std::endl;
-        if(firstPos != std::string::npos && secondPos != std::string::npos) {
+        if (firstPos != std::string::npos && secondPos != std::string::npos) {
             auto target = this->request.target().substr(firstPos, secondPos).to_string();
             std::cout << "We have first target: " << target << std::endl;
 
             auto controller = this->controllers.find(target);
-            if(controller != this->controllers.end()) {
+            if (controller != this->controllers.end()) {
                 controller->second->Process(request);
             }
         } else {
@@ -59,13 +57,37 @@ void Session::OnReadCompleted(boost::beast::error_code errorCode, std::size_t by
 }
 
 void Session::Close() {
-    boost::beast::error_code errorCode;
+    boost::beast::error_code errorCode; 
     this->stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send, errorCode);
     if (errorCode) {
         std::cout << "Closed with error: " << errorCode.message() << std::endl;
     }
 }
 
-void Session::OnWriteCompleted(bool close, boost::beast::error_code ec, std::size_t bytes_transferred) {}
+void Session::OnWriteCompleted(bool close, boost::beast::error_code errorCode, std::size_t bytesTransferred) {
+    std::cout << "Write completed" << std::endl;
+    if(close) {
+        this->Close();
+        std::cout << "Closed" << std::endl;
+    } else {
+        std::cout << "Keep going" << std::endl;
+    }
+
+    if(errorCode) {
+        std::cout << "Error: " << errorCode.message() << std::endl;
+    } else {
+        std::cout << "NO error" << std::endl;
+    }
+
+    std::cout << "Transferred: " << bytesTransferred << std::endl;
+
+    this->response = nullptr;
+
+    std::cout << "Response cleared" << std::endl;
+
+    //this->DoRead();
+
+    //std::cout << "Reading" << std::endl;
+}
 
 } // namespace Management
