@@ -23,8 +23,8 @@ GetDroppedMessagesRequest::operator()(beast::http::request<beast::http::string_b
     boost::json::object jsonObject{};
     jsonObject["DroppedMessagesCount"] = droppedMessages.size();
     jsonObject["DroppedMessages"] = boost::json::value_from(droppedMessages);
-    std::string responseJson = boost::json::serialize(jsonObject);
-    response.body() = responseJson;
+//    std::string responseJson = boost::json::serialize(jsonObject);
+//    response.body() = responseJson;
 
     return response;
 }

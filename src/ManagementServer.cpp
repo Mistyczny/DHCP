@@ -34,7 +34,7 @@ public:
             throw std::runtime_error("Failed to open management port");
         } else if (this->acceptor.set_option(boost::asio::socket_base::reuse_address(true), errorCode); errorCode) {
             throw std::runtime_error("Failed to set reuse address option");
-        } else if (this->acceptor.bind(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address("127.0.0.1"), 12345), errorCode);
+        } else if (this->acceptor.bind(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address("0.0.0.0"), 12345), errorCode);
                    errorCode) {
             throw std::runtime_error("Failed to bind to port 12345");
         } else if (this->acceptor.listen(boost::asio::socket_base::max_listen_connections, errorCode); errorCode) {

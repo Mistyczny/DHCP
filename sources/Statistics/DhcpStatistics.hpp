@@ -1,8 +1,9 @@
 #pragma once
-#include "../DhcpPacket/DhcpPacket.hpp"
+#include "DhcpPacket.hpp"
 #include <cstdint>
 #include <string>
 #include <utility>
+#include <list>
 
 namespace Dhcp {
 

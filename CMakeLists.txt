@@ -4,6 +4,9 @@ project(DHCP LANGUAGES CXX VERSION 0.0.1)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -23,7 +26,7 @@ find_package(Boost COMPONENTS json REQUIRED)
 
 aux_source_directory(${CMAKE_SOURCE_DIR}/src SOURCES)
 
-add_subdirectory(Source)
+add_subdirectory(sources)
 
 add_executable(DHCP ${SOURCES})
 target_include_directories(DHCP
@@ -31,6 +34,7 @@ target_include_directories(DHCP
     ${CMAKE_SOURCE_DIR}/include
     ${Boost_INCLUDE_DIRS}
 )
+
 target_link_libraries(DHCP
         PRIVATE
     Boost::json
@@ -41,6 +45,14 @@ target_link_libraries(DHCP
     HttpControllers
 )
 
-if(BUILD_TESTS)
-    add_subdirectory(Tests)
-endif()
+install(
+    TARGETS
+        DHCP
+    DESTINATION
+        /opt/service/
+)
+
+add_subdirectory(tests)
+
+include(cmake/CMakeCPack.cmake)
+include(CPack)

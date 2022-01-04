@@ -1,6 +1,6 @@
 #pragma once
-#include "../Source/DhcpPacket/DhcpPacket.hpp"
-#include "../Source/Statistics/DhcpStatistics.hpp"
+#include "DhcpPacket.hpp"
+#include "DhcpStatistics.hpp"
 #include <boost/asio.hpp>
 
 namespace Dhcp {

@@ -41,8 +41,8 @@ beast::http::response<beast::http::string_body> GetLoggingLevel::operator()(beas
     beast::http::response<beast::http::string_body> response{beast::http::status::ok, request.version()};
     boost::json::object jsonObject{};
     jsonObject["LoggingLevel"] = configuration->loggingConfiguration.level;
-    std::string responseJson = boost::json::serialize(jsonObject);
-    response.body() = responseJson;
+    //std::string responseJson = boost::json::serialize(jsonObject);
+    //response.body() = responseJson;
     return response;
 }
 } // namespace Configuration

@@ -23,9 +23,12 @@ int main() {
 
         auto dhcpServer = std::make_unique<Dhcp::Server>(ioContext, statistics, dhcpAddressesCache);
         dhcpServer->Listen();
+        std::cout << "DHCP Listening" <<std::endl;
         auto managementServer = std::make_unique<Management::Server>(ioContext, configuration, statistics);
         managementServer->Run();
+        std::cout << "Management Running" <<std::endl;
 
+        std::cout << "Running" <<std::endl;
         ioContext.run();
     } catch (std::exception& ex) {
         std::cout << "Exception: " << ex.what() << std::endl;
